@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0a1f14">
+<title>Ular Tangga Sirah — Jejak Sang Amanah</title>
+<style>
+:root{
+  --bg:#0a1f14;--panel:#14301f;--panel2:#1c4030;--ink:#e8f5e9;--mut:#86a68b;
+  --gold:#fbbf24;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--pur:#a855f7;
+  --safe: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--ink);font-size:15px}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+
+.screen{display:none;flex-direction:column;height:100%;overflow-y:auto;padding:20px}
+.screen.active{display:flex}
+.center{justify-content:center;align-items:center;text-align:center}
+
+.logo{font-size:52px;margin-bottom:12px}
+.title{font-size:24px;font-weight:800;color:var(--gold);margin:0 0 4px;line-height:1.2}
+.subtitle{color:var(--mut);font-size:14px;margin:0 0 28px;line-height:1.5;max-width:340px}
+
+.btn{display:block;width:100%;max-width:380px;padding:15px 18px;margin:8px auto;
+  border:none;border-radius:14px;font-size:15px;font-weight:700;
+  background:var(--gold);color:#111;cursor:pointer;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.secondary{background:var(--panel2);color:var(--ink);border:1px solid #2a4d3a}
+.btn.danger{background:var(--red);color:#fff}
+.btn.small{padding:10px 14px;font-size:13px;width:auto;max-width:none;display:inline-block;margin:0 4px}
+.btn-row{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+
+.input{width:100%;max-width:380px;display:block;margin:8px auto;padding:14px 16px;
+  border-radius:12px;border:1px solid #2a4d3a;background:var(--panel);
+  color:var(--ink);font-size:15px;font-family:inherit}
+.input:focus{outline:none;border-color:var(--gold)}
+
+.ghead{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:var(--panel);border-bottom:1px solid #2a4d3a;gap:8px}
+.ghead .who{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ghead .actions{display:flex;gap:6px}
+.icon-btn{background:transparent;border:1px solid #2a4d3a;color:var(--ink);
+  width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;padding:0}
+
+.board-wrap{padding:8px;flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#board{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;
+  width:100%;max-width:min(100%, calc(100dvh - 260px) * 1.6);aspect-ratio:8/5}
+.cell{position:relative;aspect-ratio:1;border-radius:6px;background:var(--panel);
+  border:1px solid #1f3a29;padding:2px;font-size:8px;line-height:1.05;
+  overflow:hidden;display:flex;flex-direction:column;justify-content:space-between}
+.cell .num{font-size:8px;opacity:.45;font-weight:600}
+.cell .nm{font-size:6.5px;opacity:.85;line-height:1.05;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cell.TANGGA{background:#14532d;border-color:var(--green)}
+.cell.ULAR{background:#4c1d24;border-color:var(--red)}
+.cell.NUR{background:#1e3a5f;border-color:var(--blue)}
+.cell.SEDEKAH{background:#3b2f10;border-color:#eab308}
+.cell.JEBAKAN{background:#3f1d1d;border-color:#f97316}
+.cell.SABAR{background:#1f2937;border-color:#94a3b8}
+.cell.CABANG{background:#3b0764;border-color:var(--pur)}
+.cell.KARTU{background:#2a1f4a;border-color:#8b5cf6}
+.cell.FINISH{background:#713f12;border-color:var(--gold)}
+.cell.highlight{box-shadow:0 0 0 2px var(--gold), 0 0 12px var(--gold);z-index:1}
+.tokens{position:absolute;bottom:1px;right:1px;display:flex;flex-wrap:wrap-reverse;
+  justify-content:flex-end;gap:1px;max-width:calc(100% - 4px)}
+.tok{width:8px;height:8px;border-radius:50%;border:1px solid #000;flex-shrink:0}
+
+.players{display:flex;gap:6px;padding:8px 10px;overflow-x:auto;background:var(--panel);
+  border-top:1px solid #2a4d3a;scrollbar-width:none}
+.players::-webkit-scrollbar{display:none}
+.pcard{flex-shrink:0;background:var(--panel2);border-radius:10px;padding:6px 10px;
+  font-size:11px;border:2px solid transparent;min-width:100px}
+.pcard.active{border-color:var(--gold);background:#2a3a1a}
+.pcard .nm{font-weight:700;font-size:12px;margin-bottom:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.pcard .stats{display:flex;gap:6px;font-size:10px;opacity:.85}
+.pcard .st{display:flex;gap:2px}
+
+.actionbar{padding:8px 10px calc(8px + var(--safe));background:var(--panel);
+  border-top:1px solid #2a4d3a;display:flex;gap:8px;align-items:center}
+.actionbar .main-btn{flex:1}
+.actionbar .info{flex-shrink:0;font-size:11px;color:var(--mut);text-align:right;
+  max-width:140px;line-height:1.3}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;
+  align-items:center;justify-content:center;padding:16px;z-index:100;
+  animation:fade .15s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal.hidden{display:none}
+.modal-card{background:var(--panel);border:2px solid var(--gold);border-radius:16px;
+  max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:22px;
+  animation:pop .2s}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-card h2{margin:0 0 8px;font-size:18px;color:var(--gold);line-height:1.3}
+.modal-card p{margin:0 0 14px;font-size:14.5px;line-height:1.55}
+.modal-card .hint{font-size:12px;opacity:.7;margin:6px 0 14px;font-style:italic}
+.modal-card .arabic{font-size:18px;color:var(--gold);text-align:center;margin:6px 0 14px;
+  font-family:"Traditional Arabic",serif}
+.opt{display:block;width:100%;text-align:left;background:var(--panel2);
+  color:var(--ink);border:1px solid #3a5d4a;border-radius:11px;
+  padding:13px 15px;margin-bottom:8px;font-size:14px;font-family:inherit;
+  font-weight:500;cursor:pointer;line-height:1.4;transition:all .1s}
+.opt:active{transform:scale(.98)}
+.opt:hover{background:#3a5d4a}
+.opt .eff{display:block;font-size:11px;opacity:.7;margin-top:4px}
+.note{font-size:12px;opacity:.65;margin-top:14px;font-style:italic;line-height:1.5}
+
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
+  background:#000c;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;
+  z-index:200;pointer-events:none;opacity:0;transition:opacity .3s;max-width:90%;text-align:center}
+#toast.show{opacity:1}
+
+.log-view{flex:1;overflow-y:auto;padding:12px;font-size:12.5px;line-height:1.6}
+.log-item{padding:6px 8px;border-bottom:1px solid #2a4d3a}
+.log-item:last-child{border-bottom:none}
+
+.room-code{font-family:ui-monospace,monospace;font-size:32px;font-weight:800;
+  color:var(--gold);letter-spacing:6px;text-align:center;padding:18px;
+  background:var(--panel2);border-radius:14px;margin:16px 0}
+.hint-box{background:var(--panel);border-radius:12px;padding:14px;
+  font-size:13px;line-height:1.6;color:var(--mut);max-width:400px;margin:12px auto}
+.hint-box b{color:var(--ink)}
+
+.spinner{width:32px;height:32px;border:3px solid var(--panel2);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .8s linear infinite;margin:20px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:400px){
+  .title{font-size:21px}
+  .btn{padding:13px 16px;font-size:14px}
+  .pcard{min-width:88px;font-size:10px;padding:5px 8px}
+  .pcard .nm{font-size:11px;max-width:110px}
+  .cell .nm{font-size:5.5px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="screen-landing" class="screen center active">
+    <div class="logo">🕌</div>
+    <h1 class="title">Ular Tangga Sirah</h1>
+    <p class="subtitle">Jejak Sang Amanah — dari kelahiran Nabi ﷺ<br>
+       menuju amanah yang diteruskan.</p>
+    <button class="btn" id="btn-local">🎲 Main di HP Ini (2–4 anak)</button>
+    <button class="btn secondary" id="btn-online">🌐 Main Online (beda HP)</button>
+    <button class="btn secondary" id="btn-rules">📖 Aturan &amp; Adab</button>
+    <div style="font-size:11px;opacity:.5;margin-top:30px">Ular Tangga Sirah v1.0 · PAI</div>
+  </div>
+
+  <div id="screen-setup" class="screen">
+    <h1 class="title" style="text-align:center">Siapa yang main?</h1>
+    <p class="subtitle" style="text-align:center;margin:0 auto 20px">Isi nama 2 sampai 4 pemain.</p>
+    <div id="name-inputs"></div>
+    <button class="btn secondary" id="btn-add-player">+ Tambah pemain</button>
+    <button class="btn" id="btn-start-local" style="margin-top:20px">Mulai Perjalanan 🕌</button>
+    <div class="btn-row"><button class="btn secondary small" id="btn-back-setup">← Kembali</button></div>
+  </div>
+
+  <div id="screen-online" class="screen">
+    <h1 class="title" style="text-align:center">Main Online</h1>
+    <div class="btn-row" style="margin-bottom:24px">
+      <button class="btn small" id="tab-host">Buat Room</button>
+      <button class="btn secondary small" id="tab-join">Gabung Room</button>
+    </div>
+    <div id="online-content"></div>
+    <div class="btn-row" style="margin-top:24px"><button class="btn secondary small" id="btn-back-online">← Kembali</button></div>
+  </div>
+
+  <div id="screen-game" class="screen" style="padding:0">
+    <div class="ghead">
+      <div class="who" id="game-title">Ular Tangga Sirah</div>
+      <div class="actions">
+        <button class="icon-btn" id="btn-info" title="Riwayat">ℹ️</button>
+        <button class="icon-btn" id="btn-exit" title="Keluar">✕</button>
+      </div>
+    </div>
+    <div class="board-wrap"><div id="board"></div></div>
+    <div class="players" id="players-bar"></div>
+    <div class="actionbar">
+      <button class="btn main-btn" id="btn-roll">🎲 Lempar Dadu</button>
+      <div class="info" id="turn-info"></div>
+    </div>
+  </div>
+
+  <div id="screen-log" class="screen" style="padding:0">
+    <div class="ghead">
+      <div class="who">Riwayat Perjalanan</div>
+      <div class="actions"><button class="icon-btn" id="btn-close-log">✕</button></div>
+    </div>
+    <div class="log-view" id="log-view"></div>
+  </div>
+</div>
+
+<div id="modal" class="modal hidden"><div class="modal-card" id="modal-body"></div></div>
+<div id="toast"></div>
+
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script>
+/* ============================================================
+   1. PAPAN SIRAH — 40 PETAK
+   ============================================================ */
+const BOARD = [
+ {id:1,  nama:'Kelahiran Nabi ﷺ (Tahun Gajah)', tipe:'START'},
+ {id:2,  nama:"Diasuh Halimah as-Sa'diyah", tipe:'NETRAL'},
+ {id:3,  nama:'Wafat Ibunda Aminah', tipe:'SABAR'},
+ {id:4,  nama:'Diasuh Abdul Muththalib', tipe:'NETRAL'},
+ {id:5,  nama:'Wafat Kakek; diasuh Abu Thalib', tipe:'SABAR'},
+ {id:6,  nama:'Dagang ke Syam (usia 12)', tipe:'TANGGA', ke:9},
+ {id:7,  nama:'Hilful Fudhul (pakta keadilan)', tipe:'NETRAL'},
+ {id:8,  nama:'Menikah dengan Khadijah', tipe:'NETRAL'},
+ {id:9,  nama:'Gua Hira: Wahyu Pertama', tipe:'NUR'},
+ {id:10, nama:'Wahyu Kedua: Khadijah & Waraqah', tipe:'TANGGA', ke:12},
+ {id:11, nama:'Dakwah Sirriyah 3 Tahun', tipe:'SABAR'},
+ {id:12, nama:'Dakwah Terang-terangan di Shafa', tipe:'NUR'},
+ {id:13, nama:'Penyiksaan Quraisy', tipe:'JEBAKAN', mundur:2},
+ {id:14, nama:'Abu Bakr membebaskan Bilal', tipe:'SEDEKAH'},
+ {id:15, nama:'Hijrah ke Habasyah', tipe:'TANGGA', ke:17},
+ {id:16, nama:"Pemboikotan Syi'bul Abi Thalib", tipe:'SABAR'},
+ {id:17, nama:'Amul Huzn: wafat Khadijah & Abu Thalib', tipe:'SABAR'},
+ {id:18, nama:'Thaif: dilempari & ditolak', tipe:'JEBAKAN', mundur:2},
+ {id:19, nama:'Doa Nabi untuk Thaif; sabar berbuah', tipe:'TANGGA', ke:21},
+ {id:20, nama:'Kartu Dilema I', tipe:'UJIAN'},
+ {id:21, nama:"Isra' Mi'raj", tipe:'NUR'},
+ {id:22, nama:'Baiat Aqabah I & II', tipe:'TANGGA', ke:25},
+ {id:23, nama:'PERSIMPANGAN HIJRAH', tipe:'CABANG'},
+ {id:24, nama:'Kartu Kejadian', tipe:'KARTU'},
+ {id:25, nama:'Gua Tsur: tiga hari bersembunyi', tipe:'SABAR'},
+ {id:26, nama:'Tiba di Quba; masjid pertama', tipe:'NUR'},
+ {id:27, nama:'Membangun Masjid Nabawi', tipe:'TANGGA', ke:29},
+ {id:28, nama:'Anshar menolong Muhajirin', tipe:'SEDEKAH'},
+ {id:29, nama:'Piagam Madinah', tipe:'NETRAL'},
+ {id:30, nama:'Munafik menghasut', tipe:'ULAR', ke:26},
+ {id:31, nama:'Godaan kembali ke cara lama', tipe:'JEBAKAN', mundur:2},
+ {id:32, nama:'Kartu Dilema II', tipe:'UJIAN'},
+ {id:33, nama:'Perang Badar: 313 vs 1000', tipe:'TANGGA', ke:36},
+ {id:34, nama:'Uhud: pemanah tinggalkan posisi', tipe:'ULAR', ke:30},
+ {id:35, nama:'Khandaq: parit, lapar, dingin', tipe:'SABAR'},
+ {id:36, nama:'Hudaibiyah: kemenangan yang nyata', tipe:'NUR'},
+ {id:37, nama:'Hunain: takjub jumlah lalu mundur', tipe:'JEBAKAN', mundur:2},
+ {id:38, nama:'Fathu Makkah: memaafkan', tipe:'NUR'},
+ {id:39, nama:"Kartu Refleksi (Haji Wada')", tipe:'KARTU'},
+ {id:40, nama:'Wafat Nabi ﷺ — Amanah Diteruskan', tipe:'FINISH'}
+];
+const B = Object.fromEntries(BOARD.map(t=>[t.id,t]));
+
+const CARDS = [
+ {kode:'S01',judul:'Dagang dengan Modal Titipan',
+  teks:'Engkau berdagang dengan modal orang lain. Sebagian barang cacat, pembeli tidak tahu.',
+  opsi:[
+    {label:'Jujur katakan cacatnya',eff:{a:2,p:1}},
+    {label:'Jual tanpa bilang',eff:{p:3,a:-3}},
+    {label:'Jual murah tanpa menjelaskan',eff:{p:1,a:-1}}
+  ],makna:'Gelar Al-Amin lahir dari meja dagang, bukan dari mimbar.'},
+ {kode:'S02',judul:'Tekanan di Pasar',
+  teks:'Boikot berlangsung. Engkau ditawari dagang kembali asal tidak mengakui Nabi ﷺ.',
+  opsi:[
+    {label:'Tolak',eff:{a:2,move:-1}},
+    {label:'Terima',eff:{p:3,a:-3}},
+    {label:'Diam & cari jalan lain',eff:{a:1,i:1}}
+  ],makna:"Syi'bul Abi Thalib: harga dari keteguhan."},
+ {kode:'S03',judul:'Bilal Ditindih Batu',
+  teks:'Bilal disiksa di padang panas. Engkau punya sedikit uang.',
+  opsi:[
+    {label:'Beli lalu merdekakan',eff:{a:3,p:-1}},
+    {label:'Beri air & doa diam-diam',eff:{a:1}},
+    {label:'Pergi agar aman',eff:{a:-2}}
+  ],makna:'Abu Bakr membeli dan membebaskan Bilal.'},
+ {kode:'S04',judul:'Engkau Ditanya Quraisy',
+  teks:'Quraisy menyiksa siapa pun yang mengaku Muslim. Engkau dihadapkan pada mereka.',
+  opsi:[
+    {label:'Akui iman',eff:{a:3,move:-2}},
+    {label:'Sembunyikan iman (taqiyyah)',eff:{a:1,i:1}},
+    {label:'Murtad',eff:{a:-4,p:2}}
+  ],makna:'Ammar bin Yasir — taqiyyah hanya saat terpaksa, bukan keseharian.'},
+ {kode:'S05',judul:'Hijrah atau Tinggal',
+  teks:'Perintah hijrah tiba. Engkau punya orang tua renta dan harta di Makkah.',
+  opsi:[
+    {label:'Hijrah, tinggalkan harta',eff:{a:3,p:-1}},
+    {label:'Tinggal merawat orang tua (izin)',eff:{a:1}},
+    {label:'Tinggal karena takut',eff:{a:-2}}
+  ],makna:'Hijrah bukan sekadar pindah tempat.'},
+ {kode:'S06',judul:'Habasyah: Pulang atau Tetap',
+  teks:'Di Habasyah engkau aman, tapi mendengar kaum Muslim Makkah butuh bantuan.',
+  opsi:[
+    {label:'Pulang',eff:{a:2,move:-1}},
+    {label:'Tetap & kirim bantuan',eff:{a:1,p:1}},
+    {label:'Tetap diam',eff:{a:-1}}
+  ],makna:'Ukhuwah melampaui jarak.'},
+ {kode:'S07',judul:'Bekal di Jalan Hijrah',
+  teks:'Rombongan ingin membuang bekal agar cepat sampai.',
+  opsi:[
+    {label:'Tetap berbagi bekal',eff:{a:2}},
+    {label:'Simpan bekal sendiri',eff:{a:-2,p:1}},
+    {label:'Bagi, tapi dihitung-hitung',eff:{a:-1,p:2}}
+  ],makna:'Berbagi yang paling berat adalah saat kekurangan.'},
+ {kode:'S08',judul:'Anshar & Muhajirin',
+  teks:'Engkau orang Anshar. Muhajirin datang tanpa harta. Engkau punya kebun.',
+  opsi:[
+    {label:'Bagi hasil kebun',eff:{a:3,p:-1}},
+    {label:'Jual dengan harga biasa',eff:{a:1}},
+    {label:'Tolak dengan alasan',eff:{a:-2}}
+  ],makna:'Kaum Anshar membagi kebun, bukan sekadar memberi.'},
+ {kode:'S09',judul:'Hasutan Orang Munafik',
+  teks:'Abdullah bin Ubay menghasut agar Muhajirin diusir dari Madinah.',
+  opsi:[
+    {label:'Hadapi dengan hujjah',eff:{a:2}},
+    {label:'Diam',eff:{a:-1}},
+    {label:'Ikut arus',eff:{a:-3,p:2}}
+  ],makna:'Kebenaran perlu disuarakan, bukan hanya disimpan.'},
+ {kode:'S10',judul:'Pemanah di Uhud',
+  teks:'Perintahnya tetap di posisi. Rampasan terlihat di bawah bukit.',
+  opsi:[
+    {label:'Tetap di posisi',eff:{a:3,p:1}},
+    {label:'Turun mengambil rampasan',eff:{a:-3,p:3}},
+    {label:'Ragu & setengah turun',eff:{a:-1}}
+  ],makna:'Kemenangan bisa berubah karena satu pelanggaran kecil.'},
+ {kode:'S11',judul:'Kabar Bohong',
+  teks:'Engkau mendengar kabar bohong tentang Aisyah. Engkau tidak tahu pasti.',
+  opsi:[
+    {label:'Diam & tidak menyebar',eff:{a:2}},
+    {label:'Sebarkan karena terasa seru',eff:{a:-3}},
+    {label:'Cari kebenaran dulu',eff:{a:2,i:1}}
+  ],makna:'Tabayyun sebelum bicara.'},
+ {kode:'S12',judul:'Hudaibiyah Terasa Merugikan',
+  teks:'Isi perjanjian terasa berat. Sebagian sahabat protes keras.',
+  opsi:[
+    {label:'Taat pada keputusan pemimpin',eff:{a:2,i:1}},
+    {label:'Protes keras di depan umum',eff:{a:-2}},
+    {label:'Diam, lalu tanya baik-baik',eff:{a:1}}
+  ],makna:'Para sahabat pun sempat keberatan — lalu sadar ada kemenangan di baliknya.'},
+ {kode:'S13',judul:'Fathu Makkah: Balas atau Maafkan',
+  teks:'Quraisy yang dulu menyiksamu kini tak berdaya di depanmu.',
+  opsi:[
+    {label:'Maafkan',eff:{a:3,p:1}},
+    {label:'Balas sebagian',eff:{a:-2,p:2}},
+    {label:'Tuntut keadilan lewat hukum',eff:{a:1,i:1}}
+  ],makna:'"Pergilah, kalian bebas hari ini."'},
+ {kode:'S14',judul:'Hunain: Pasukan Mundur',
+  teks:'Pasukan mundur karena takjub pada jumlah mereka sendiri.',
+  opsi:[
+    {label:'Tetap bertahan',eff:{a:3}},
+    {label:'Mundur menyelamatkan diri',eff:{a:-2}},
+    {label:'Ajari yang lain bertahan',eff:{a:2,i:1}}
+  ],makna:'Jumlah besar bukan jaminan kemenangan.'},
+ {kode:'S15',judul:'Tabuk: Panas dan Buah Matang',
+  teks:'Perang Tabuk di tengah panas terik. Engkau lelah dan rindu keluarga.',
+  opsi:[
+    {label:'Berangkat',eff:{a:3}},
+    {label:'Memberi bekal orang lain lalu tinggal',eff:{a:1}},
+    {label:'Tinggal tanpa alasan',eff:{a:-2}}
+  ],makna:'Ujian terberat adalah saat lelah.'},
+ {kode:'S16',judul:'Barang Rampasan',
+  teks:'Engkau menemukan barang rampasan yang belum dibagi.',
+  opsi:[
+    {label:'Serahkan ke pemimpin',eff:{a:3}},
+    {label:'Ambil diam-diam',eff:{a:-3,p:2}},
+    {label:'Tanya dulu hukumnya',eff:{a:1,i:1}}
+  ],makna:'Ghulul — mengambil sebelum dibagi.'},
+ {kode:'S17',judul:'Anak Sakit di Malam Keberangkatan',
+  teks:'Anakmu sakit, sementara pasukan akan berangkat malam ini.',
+  opsi:[
+    {label:'Berangkat, titipkan pada keluarga',eff:{a:2,p:1}},
+    {label:'Tinggal, minta izin',eff:{a:1}},
+    {label:'Tinggal tanpa izin',eff:{a:-2}}
+  ],makna:'Izin menjaga amanah.'},
+ {kode:'S18',judul:'Tetangga yang Pernah Menyakitimu',
+  teks:'Tetanggamu (non-Muslim) sakit, dan dulu pernah menyakitimu.',
+  opsi:[
+    {label:'Jenguk',eff:{a:3}},
+    {label:'Diam',eff:{a:-1}},
+    {label:'Jenguk sambil mengungkit',eff:{a:1}}
+  ],makna:'Akhlak tidak menunggu balasan.'},
+ {kode:'S19',judul:'Menang Cepat atau Menolong Kawan',
+  teks:'Engkau bisa finis lebih cepat jika meninggalkan kawan yang tertinggal.',
+  opsi:[
+    {label:'Tolong dulu',eff:{a:3,move:-1}},
+    {label:'Lanjut menang',eff:{p:3,a:-2}},
+    {label:'Kirim bantuan, lanjut pelan',eff:{a:1,p:1}}
+  ],makna:'Ukhuwah lebih mahal daripada kemenangan.'},
+ {kode:'S20',judul:'Amanah Terakhir',
+  teks:'Di akhir perjalanan, engkau bisa menyembunyikan satu kesalahan agar namamu bersih.',
+  opsi:[
+    {label:'Akui',eff:{a:3,p:1}},
+    {label:'Sembunyikan',eff:{a:-3,p:2}},
+    {label:'Perbaiki diam-diam',eff:{a:2}}
+  ],makna:'Kartu penutup — pas dibacakan di akhir.'}
+];
+
+const EVENTS = [
+ {judul:'Boikot Quraisy',teks:'Semua pemain mundur 1 petak, kecuali yang berakhlak ≥2.',eff:{semuaMundur:1,syaratA:2}},
+ {judul:'Musim Dagang Tiba',teks:'Semua pemain mendapat 1 pahala.',eff:{semuaP:1}},
+ {judul:'Kabar Hijrah',teks:'Pemain berakhlak terendah mundur 2 petak.',eff:{terendahMundur:2}},
+ {judul:'Tamu Tak Dikenal',teks:'Pemain yang mau menjamu (P−1) mendapat 2 akhlak.',eff:{jamu:true}},
+ {judul:'Tahun Kekeringan',teks:'Semua pemain kehilangan 1 pahala (minimal 0).',eff:{semuaPMinus:1}},
+ {judul:'Jamaah Haji',teks:'Pemain yang membagikan 1 pahala ke pemain lain mendapat 2 akhlak.',eff:{berbagi:true}},
+ {judul:'Perang Berkecamuk',teks:'Semua pemain mundur 1 petak, kecuali yang berakhlak ≥3.',eff:{semuaMundur:1,syaratA:3}},
+ {judul:'Kafilah Dagang Lewat',teks:'Pemain berilmu ≥2 bisa membaca situasi → dapat 2 pahala.',eff:{ilmuP:2,syaratI:2}},
+ {judul:'Wahyu Turun',teks:'Ayat baru turun. Semua pemain mendapat 1 akhlak.',eff:{semuaA:1}},
+ {judul:'Utusan Quraisy',teks:'Utusan menawarkan harta untuk meninggalkan iman. Menolak (A+1) atau menerima (P+2, A−2).',eff:{pilihanUtusan:true}}
+];
+
+const REFLEKSI = [
+ {judul:'Peristiwa yang Menyentuh',teks:'Peristiwa sirah mana yang paling menyentuhmu dalam permainan tadi? Mengapa justru itu?'},
+ {judul:'Sifat yang Ingin Ditiru',teks:'Satu sifat Nabi ﷺ yang paling ingin kamu tiru minggu ini. Bukan semuanya — satu saja.'},
+ {judul:'Sahabat yang Dikagumi',teks:'Sahabat mana yang paling kamu kagumi dari permainan ini? Apa satu hal dari dia yang ingin kamu contoh?'},
+ {judul:'Akhlak yang Ingin Diubah',teks:'Setelah tahu sirah hari ini, satu hal apa yang ingin kamu ubah dari akhlakmu?'},
+ {judul:'Amanah yang Kamu Pegang',teks:'Amanah apa yang sedang kamu pegang sekarang — di rumah, sekolah, atau kelas? Bagaimana kamu menjaganya?'}
+];
+
+const COLORS = ['#ef4444','#3b82f6','#22c55e','#eab308'];
+
+/* ============================================================
+   2. STATE & LOGIC
+   ============================================================ */
+const clamp=(v,mn,mx)=>Math.max(mn,Math.min(mx,v));
+
+function newState(names){
+  return {
+    version:1,
+    players: names.map((n,i)=>({
+      id:i, nama:n||('Pemain '+(i+1)), warna:COLORS[i%4],
+      pos:1, lane:'main', p:0, a:0, i:0, skip:0,
+      selesai:false, menolong:0
+    })),
+    turn:0,
+    phase:'IDLE',
+    log:[],
+    winner:null,
+    pendingCard:null
+  };
+}
+
+function pushLog(s,msg){
+  s.log.push({t:Date.now(),msg});
+  if(s.log.length>300) s.log=s.log.slice(-300);
+}
+function aktif(s){ return s.players[s.turn]; }
+
+function nextPos(p){
+  if(p.lane==='pintas'){
+    if(p.pos==='P1') return 'P2';
+    if(p.pos==='P2') return 'P3';
+    if(p.pos==='P3') return 'P4';
+    if(p.pos==='P4') return 26;
+  }
+  if(typeof p.pos==='number'){
+    if(p.pos>=40) return 40;
+    return p.pos+1;
+  }
+  return p.pos;
+}
+
+function gerak(s,p,steps){
+  if(steps>0){
+    if(p.lane==='main' && typeof p.pos==='number' && p.pos+steps>40){
+      p.a=clamp(p.a+1,-5,5);
+      pushLog(s,`${p.nama}: tak bisa lewati petak 40 → tetap, A+1 (sabar)`);
+      return;
+    }
+    for(let k=0;k<steps;k++){
+      const n=nextPos(p);
+      if(n===26 && p.lane==='pintas') p.lane='main';
+      p.pos=n;
+      if(p.pos===40) break;
+    }
+  } else {
+    for(let k=0;k<Math.abs(steps);k++){
+      if(p.lane==='pintas'){
+        if(p.pos==='P1'){p.lane='main';p.pos=23;}
+        else if(p.pos==='P2') p.pos='P1';
+        else if(p.pos==='P3') p.pos='P2';
+        else if(p.pos==='P4') p.pos='P3';
+      } else if(typeof p.pos==='number' && p.pos>1){
+        p.pos-=1;
+      }
+    }
+  }
+}
+
+function applyEff(s,p,eff,sumber=''){
+  if(!eff) return;
+  if(eff.p) p.p=Math.max(0,p.p+eff.p);
+  if(eff.a) p.a=clamp(p.a+eff.a,-5,5);
+  if(eff.i) p.i=clamp(p.i+eff.i,0,3);
+  if(eff.skip) p.skip+=eff.skip;
+  if(eff.move) gerak(s,p,eff.move);
+  if(eff.ke!=null){ p.pos=eff.ke; p.lane='main'; }
+  if(eff.dadu){
+    const g=1+Math.floor(Math.random()*6);
+    if(g%2===0){p.a=clamp(p.a+1,-5,5);pushLog(s,`${p.nama}: dadu keberuntungan (${g}) → A+1`);}
+    else{p.a=clamp(p.a-1,-5,5);pushLog(s,`${p.nama}: dadu keberuntungan (${g}) → A−1`);}
+  }
+  const parts=[];
+  if(eff.p) parts.push(`P${eff.p>=0?'+':''}${eff.p}`);
+  if(eff.a) parts.push(`A${eff.a>=0?'+':''}${eff.a}`);
+  if(eff.i) parts.push(`I${eff.i>=0?'+':''}${eff.i}`);
+  pushLog(s,`${p.nama} ${sumber}${parts.length?' → '+parts.join(', '):''}`);
+}
+
+function berbagi(s,p){
+  const lain=s.players.filter(x=>x.id!==p.id);
+  if(lain.length===0){p.a=clamp(p.a+1,-5,5);return;}
+  const miskin=lain.reduce((a,b)=>a.p<=b.p?a:b);
+  if(p.p>=1){
+    p.p-=1; miskin.p+=1; p.p+=2; p.a=clamp(p.a+1,-5,5); p.menolong+=1;
+    pushLog(s,`${p.nama} bersedekah 1 P ke ${miskin.nama} → P+2, A+1`);
+  } else {
+    p.a=clamp(p.a+1,-5,5);
+    pushLog(s,`${p.nama} belum punya pahala → hanya A+1`);
+  }
+}
+
+function resolveTile(s,p){
+  if(p.lane==='pintas') return resolvePintas(s,p);
+  const t=B[p.pos];
+  if(!t) return null;
+  switch(t.tipe){
+    case 'TANGGA':
+      pushLog(s,`${p.nama}: ${t.nama} → naik ke ${t.ke}`);
+      p.pos=t.ke; return resolveTile(s,p);
+    case 'ULAR':
+      pushLog(s,`${p.nama}: ${t.nama} → turun ke ${t.ke}`);
+      p.pos=t.ke; return null;
+    case 'NUR':
+      p.p+=1; p.a=clamp(p.a+1,-5,5);
+      pushLog(s,`${p.nama}: ${t.nama} → P+1, A+1`); return null;
+    case 'SEDEKAH':
+      berbagi(s,p); return null;
+    case 'SABAR':
+      p.skip+=1; p.a=clamp(p.a+2,-5,5);
+      pushLog(s,`${p.nama}: ${t.nama} → skip 1 giliran, A+2`); return null;
+    case 'JEBAKAN':
+      if(t.mundur){gerak(s,p,-t.mundur);pushLog(s,`${p.nama}: ${t.nama} → mundur ${t.mundur}`);}
+      if(t.skip){p.skip+=t.skip;pushLog(s,`${p.nama}: ${t.nama} → skip ${t.skip}`);}
+      return null;
+    case 'CABANG':
+      return {type:'cabang',playerId:p.id};
+    case 'UJIAN':
+      return {type:'dilema',playerId:p.id,card:CARDS[Math.floor(Math.random()*CARDS.length)]};
+    case 'KARTU':
+      if(p.pos===39) return {type:'refleksi',playerId:p.id,r:REFLEKSI[Math.floor(Math.random()*REFLEKSI.length)]};
+      return {type:'kejadian',playerId:p.id,ev:EVENTS[Math.floor(Math.random()*EVENTS.length)]};
+    case 'FINISH': return {type:'finish',playerId:p.id};
+    default: return null;
+  }
+}
+
+function resolvePintas(s,p){
+  if(p.pos==='P1') return {type:'pintasP1',playerId:p.id};
+  if(p.pos==='P2'){
+    applyEff(s,p,{p:3,a:-2},'di P2 (harta rampasan)');
+    return null;
+  }
+  if(p.pos==='P3'){
+    p.a=clamp(p.a-2,-5,5);
+    if(p.a<0){p.pos=12;p.lane='main';pushLog(s,`${p.nama}: A minus di P3 → balik ke 12 (Dakwah Terang-terangan)`);}
+    else pushLog(s,`${p.nama} di P3: A−2`);
+    return null;
+  }
+  if(p.pos==='P4'){
+    return {type:'pintasP4',playerId:p.id,taubat:p.a>=2};
+  }
+  return null;
+}
+
+function cekFinish(s,p){
+  if(p.a<3){
+    pushLog(s,`${p.nama} di 40 tapi A=${p.a} (<3) → belum bisa finis.`);
+    p.a=clamp(p.a+1,-5,5);
+    pushLog(s,`${p.nama}: menambah bekal A+1`);
+    return false;
+  }
+  const terjebak=s.players.filter(x=>x.id!==p.id && x.a<0 && !x.selesai);
+  if(terjebak.length>0){
+    pushLog(s,`${p.nama} belum bisa finis — masih ada pemain terjebak. Wajib menolong dulu.`);
+    p.p=Math.max(0,p.p-1);
+    terjebak[0].a=clamp(terjebak[0].a+2,-5,5);
+    p.menolong+=1;
+    pushLog(s,`${p.nama} menolong ${terjebak[0].nama}: P−1, ${terjebak[0].nama} A+2`);
+    return false;
+  }
+  if(p.menolong<1){
+    pushLog(s,`${p.nama} belum pernah menolong sepanjang perjalanan → belum bisa finis.`);
+    return false;
+  }
+  p.selesai=true;
+  pushLog(s,`🏆 ${p.nama} — AMANAH DITERUSKAN (P=${p.p}, A=${p.a})`);
+  return true;
+}
+
+function lanjutGiliran(s){
+  if(s.players.every(x=>x.selesai)){ s.phase='GAME_OVER'; return; }
+  let guard=0;
+  do {
+    s.turn=(s.turn+1)%s.players.length;
+    guard++;
+  } while(s.players[s.turn].selesai && guard<100);
+  const p=aktif(s);
+  if(p.skip>0){
+    p.skip-=1;
+    pushLog(s,`${p.nama} melewati giliran (sabar/terjebak).`);
+    return lanjutGiliran(s);
+  }
+  s.phase='IDLE';
+}
+
+/* ============================================================
+   3. GAME SESSION
+   ============================================================ */
+class GameSession {
+  constructor(state, onUpdate){
+    this.s=state;
+    this.onUpdate=onUpdate||(()=>{});
+  }
+  roll(){
+    if(this.s.phase!=='IDLE') return;
+    const p=aktif(this.s);
+    if(p.selesai) return;
+
+    if(p.pos===40 && p.lane==='main'){
+      this.s.phase='ROLLING';
+      pushLog(this.s,`${p.nama}: mencoba finis…`);
+      this.onUpdate();
+      setTimeout(()=>{
+        const ok=cekFinish(this.s,p);
+        if(ok) this.s.phase='GAME_OVER';
+        else lanjutGiliran(this.s);
+        this.onUpdate();
+      }, 400);
+      return;
+    }
+
+    this.s.phase='ROLLING';
+    const d=1+Math.floor(Math.random()*6);
+    pushLog(this.s,`${p.nama} melempar dadu: ${d}`);
+    gerak(this.s,p,d);
+    this.onUpdate();
+    setTimeout(()=>{
+      if(p.pos===40 && p.lane==='main'){
+        const ok=cekFinish(this.s,p);
+        if(ok){ this.s.phase='GAME_OVER'; this.onUpdate(); return; }
+        lanjutGiliran(this.s); this.onUpdate(); return;
+      }
+      const prompt=resolveTile(this.s,p);
+      if(prompt){
+        this.s.pendingCard=prompt;
+        this.s.phase='AWAIT';
+        this.onUpdate();
+      } else {
+        lanjutGiliran(this.s);
+        this.onUpdate();
+      }
+    }, 500);
+  }
+  resolvePrompt(action){
+    const prompt=this.s.pendingCard;
+    if(!prompt) return;
+    const p=this.s.players[prompt.playerId];
+    switch(prompt.type){
+      case 'dilema': {
+        const o=prompt.card.opsi[action.index];
+        if(!o) return;
+        applyEff(this.s,p,o.eff,`pilih "${o.label}"`);
+        break;
+      }
+      case 'cabang': {
+        if(action.pintas){
+          p.lane='pintas'; p.pos='P1';
+          pushLog(this.s,`${p.nama} masuk jalur pintas.`);
+          const p2=resolvePintas(this.s,p);
+          if(p2){ this.s.pendingCard=p2; this.onUpdate(); return; }
+        } else {
+          pushLog(this.s,`${p.nama} tetap di jalur hijrah utama.`);
+        }
+        break;
+      }
+      case 'pintasP1': {
+        if(action.back){
+          p.lane='main'; p.pos=24;
+          pushLog(this.s,`${p.nama} kembali ke jalur utama (24).`);
+        } else {
+          if(p.a>=2){ p.a=clamp(p.a-2,-5,5); pushLog(this.s,`${p.nama}: lanjut P1, A−2`); }
+          else { p.a=clamp(p.a-1,-5,5); p.pos=16; p.lane='main'; pushLog(this.s,`${p.nama}: gagal syarat → mundur ke 16`); }
+        }
+        break;
+      }
+      case 'pintasP4': {
+        if(prompt.taubat){
+          p.pos=26; p.lane='main'; p.a=clamp(p.a+1,-5,5);
+          pushLog(this.s,`${p.nama}: taubat, kembali ke Quba (26), A+1`);
+        } else {
+          p.pos=30; p.lane='main'; p.a=clamp(p.a-1,-5,5);
+          pushLog(this.s,`${p.nama}: A kurang, tersesat ke 30 (Munafik), A−1`);
+        }
+        break;
+      }
+      case 'kejadian': {
+        const e=prompt.ev.eff;
+        if(e.semuaMundur) this.s.players.forEach(x=>{
+          if(e.syaratA!=null && x.a>=e.syaratA) return;
+          gerak(this.s,x,-e.semuaMundur);
+        });
+        if(e.semuaP) this.s.players.forEach(x=>x.p+=e.semuaP);
+        if(e.semuaA) this.s.players.forEach(x=>x.a=clamp(x.a+e.semuaA,-5,5));
+        if(e.semuaPMinus) this.s.players.forEach(x=>x.p=Math.max(0,x.p-e.semuaPMinus));
+        if(e.terendahMundur){
+          const t=this.s.players.reduce((a,b)=>a.a<=b.a?a:b);
+          gerak(this.s,t,-e.terendahMundur);
+        }
+        if(e.ilmuP) this.s.players.forEach(x=>{if(x.i>=(e.syaratI||2)) x.p+=e.ilmuP;});
+        if(e.jamu && p.p>=1){ p.p-=1; p.a=clamp(p.a+2,-5,5); }
+        if(e.berbagi && p.p>=1){ p.p-=1; p.a=clamp(p.a+2,-5,5); p.menolong+=1; }
+        if(e.pilihanUtusan){
+          if(action.utusan==='tolak'){ p.a=clamp(p.a+1,-5,5); }
+          else { p.p+=2; p.a=clamp(p.a-2,-5,5); }
+        }
+        pushLog(this.s,`Kejadian: ${prompt.ev.judul}`);
+        break;
+      }
+      case 'refleksi': {
+        if(action.lewati){ pushLog(this.s,`${p.nama}: refleksi dilewati.`); }
+        else { p.a=clamp(p.a+2,-5,5); pushLog(this.s,`${p.nama}: refleksi dijawab → A+2`); }
+        break;
+      }
+      case 'finish': {
+        const ok=cekFinish(this.s,p);
+        if(ok){ this.s.phase='GAME_OVER'; this.s.pendingCard=null; this.onUpdate(); return; }
+        break;
+      }
+    }
+    this.s.pendingCard=null;
+    lanjutGiliran(this.s);
+    this.onUpdate();
+  }
+}
+
+/* ============================================================
+   4. UI GLOBAL
+   ============================================================ */
+let session=null;
+let localMode=true;
+let myPlayerId=0;
+
+function $(id){return document.getElementById(id)}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function toast(msg){
+  const t=$('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ============================================================
+   5. LANDING
+   ============================================================ */
+$('btn-local').onclick=()=>{ localMode=true; showScreen('screen-setup'); initSetup(); };
+$('btn-online').onclick=()=>{ localMode=false; showScreen('screen-online'); initOnlineTabs(); };
+$('btn-rules').onclick=()=>{
+  showModal(`
+    <h2>Aturan Singkat</h2>
+    <p style="font-size:13.5px;line-height:1.7">
+    <b>Tujuan:</b> sampai di petak 40 (Amanah Diteruskan) dengan <b>Akhlak ≥ 3</b>, sudah <b>menolong minimal 1×</b>, dan <b>tidak ada pemain terjebak</b>.<br><br>
+    <b>3 Sumber Daya:</b><br>
+    • <b>P</b> (Pahala) — untuk skor &amp; aksi tertentu<br>
+    • <b>A</b> (Akhlak) — kunci syarat finis (−5 sampai +5)<br>
+    • <b>I</b> (Ilmu) — untuk hal-hal khusus<br><br>
+    <b>Petak:</b><br>
+    🕌 Nur → P+1, A+1<br>
+    💰 Sedekah → bagi 1 P, dapat P+2 &amp; A+1<br>
+    ⏳ Sabar → skip 1 giliran, A+2<br>
+    ❓ Ujian → kartu dilema<br>
+    🃏 Kartu → kejadian/refleksi<br><br>
+    <b>Yang penting:</b> tidak ada jawaban salah. Semua pilihan punya konsekuensi. Menolong itu kuat, bukan rugi.
+    </p>
+    <h2 style="margin-top:20px">Adab Bermain</h2>
+    <p style="font-size:13px;line-height:1.7">
+    1. Selalu tulis <b>ﷺ</b> setelah nama Nabi Muhammad.<br>
+    2. Dalam permainan ini, engkau berperan sebagai <b>sahabat/orang biasa</b>, bukan sebagai Nabi.<br>
+    3. Perbedaan riwayat itu wajar — ini media pembelajaran, bukan rujukan sejarah/fikih.<br>
+    4. Perbedaan pendapat sahabat (mis. Hudaibiyah) jangan divonis — tujuannya memahami.<br>
+    5. Kata "finis" diganti <b>"Amanah Diteruskan"</b>, bukan "menang".
+    </p>
+    <button class="opt" onclick="closeModal()">Mengerti</button>
+  `);
+};
+
+/* ============================================================
+   6. SETUP LOCAL
+   ============================================================ */
+function initSetup(){ renderNameInputs(2); }
+function renderNameInputs(n){
+  const box=$('name-inputs');
+  box.innerHTML='';
+  for(let i=0;i<n;i++){
+    const inp=document.createElement('input');
+    inp.className='input';
+    inp.placeholder=`Nama pemain ${i+1}`;
+    inp.maxLength=14;
+    inp.dataset.idx=i;
+    box.appendChild(inp);
+  }
+  $('btn-add-player').style.display = n>=4 ? 'none' : 'block';
+}
+$('btn-add-player').onclick=()=>{
+  const cur=$('name-inputs').querySelectorAll('input').length;
+  if(cur>=4) return;
+  const names=[];
+  $('name-inputs').querySelectorAll('input').forEach(x=>names.push(x.value));
+  renderNameInputs(cur+1);
+  $('name-inputs').querySelectorAll('input').forEach((x,i)=>{ if(names[i]) x.value=names[i]; });
+};
+$('btn-back-setup').onclick=()=>showScreen('screen-landing');
+$('btn-start-local').onclick=()=>{
+  const inputs=[...$('name-inputs').querySelectorAll('input')];
+  const names=inputs.map((x,i)=>x.value.trim()||`Pemain ${i+1}`);
+  if(names.length<2){ toast('Minimal 2 pemain'); return; }
+  startLocalGame(names);
+};
+function startLocalGame(names){
+  myPlayerId=-1;
+  const st=newState(names);
+  pushLog(st,'Perjalanan dimulai. Tidak ada jawaban salah — hanya pilihan.');
+  session=new GameSession(st, renderGame);
+  showScreen('screen-game');
+  renderGame();
+}
+
+/* ============================================================
+   7. RENDER
+   ============================================================ */
+function urutanTampil(){
+  const out=[];
+  for(let r=0;r<5;r++){
+    const row=[];
+    for(let c=0;c<8;c++) row.push(r*8+c+1);
+    if(r%2===1) row.reverse();
+    out.push(...row);
+  }
+  return out;
+}
+
+function renderGame(){
+  if(!session) return;
+  const s=session.s;
+
+  const bd=$('board');
+  bd.innerHTML='';
+  urutanTampil().forEach(id=>{
+    const t=B[id];
+    const div=document.createElement('div');
+    div.className='cell '+(t.tipe||'');
+    const isi=s.players.filter(p=>p.lane==='main' && p.pos===id);
+    const aktifP=aktif(s);
+    if(aktifP && aktifP.lane==='main' && aktifP.pos===id) div.classList.add('highlight');
+    div.innerHTML=`<div class="num">${id}</div>
+      <div class="nm">${t.nama}</div>
+      <div class="tokens">${isi.map(p=>`<span class="tok" style="background:${p.warna}"></span>`).join('')}</div>`;
+    bd.appendChild(div);
+  });
+
+  const pb=$('players-bar');
+  pb.innerHTML='';
+  s.players.forEach((p,i)=>{
+    const d=document.createElement('div');
+    d.className='pcard'+(i===s.turn?' active':'');
+    d.innerHTML=`<div class="nm" style="color:${p.warna}">${p.nama}</div>
+      <div class="stats">
+        <span class="st">P ${p.p}</span>
+        <span class="st">A ${p.a}</span>
+        <span class="st">I ${p.i}</span>
+        ${p.selesai?'<span>🏆</span>':''}
+      </div>
+      <div style="font-size:9px;opacity:.6;margin-top:2px">Petak ${p.pos}${p.skip>0?' · skip':''}</div>`;
+    pb.appendChild(d);
+  });
+
+  const p=aktif(s);
+  const btn=$('btn-roll');
+  const info=$('turn-info');
+  if(s.phase==='GAME_OVER'){
+    btn.disabled=true;
+    btn.textContent='Perjalanan Selesai';
+    info.textContent='Waktunya refleksi bersama.';
+  } else if(s.phase==='AWAIT'){
+    btn.disabled=true;
+    btn.textContent='Menunggu pilihan…';
+    info.textContent=`${p.nama}`;
+  } else {
+    btn.disabled=false;
+    if(p.pos===40 && p.lane==='main' && !p.selesai){
+      btn.textContent=`🏁 ${p.nama}: Coba Finis`;
+    } else {
+      btn.textContent=`🎲 ${p.nama}: Lempar Dadu`;
+    }
+    info.textContent=`Giliran ${p.nama}`;
+  }
+
+  if(s.pendingCard){
+    if(!$('modal').classList.contains('hidden') && $('modal').dataset.pending==='1') return;
+    showPrompt(s.pendingCard);
+  }
+}
+
+$('btn-roll').onclick=()=>{
+  if(!session) return;
+  const s=session.s;
+  if(localMode){
+    if(s.pendingCard) return;
+    session.roll();
+  } else {
+    if(myPlayerId===0){
+      if(s.turn===0){ session.roll(); broadcastState(); }
+      else toast('Bukan giliranmu');
+    } else {
+      if(s.turn!==myPlayerId){ toast('Bukan giliranmu'); return; }
+      sendToHost({type:'action',action:{type:'roll'}});
+    }
+  }
+};
+
+function showPrompt(prompt){
+  const s=session.s;
+  const p=s.players[prompt.playerId];
+
+  if(prompt.type==='dilema'){
+    const c=prompt.card;
+    let html=`<h2>${c.kode} — ${c.judul}</h2><p>${c.teks}</p><div class="hint">${p.nama}, pilih:</div>`;
+    c.opsi.forEach((o,i)=>{
+      const e=o.eff;
+      const tag=[];
+      if(e.p) tag.push(`P${e.p>=0?'+':''}${e.p}`);
+      if(e.a) tag.push(`A${e.a>=0?'+':''}${e.a}`);
+      if(e.i) tag.push(`I${e.i>=0?'+':''}${e.i}`);
+      if(e.move) tag.push(`geser ${e.move>0?'+':''}${e.move}`);
+      html+=`<button class="opt" data-i="${i}">${o.label}<span class="eff">${tag.join(' · ')}</span></button>`;
+    });
+    html+=`<div class="note">${c.makna||''}</div>`;
+    showModal(html);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        const act={index:+btn.dataset.i};
+        if(localMode) session.resolvePrompt(act);
+        else if(myPlayerId===0){ session.resolvePrompt(act); broadcastState(); }
+        else sendToHost({type:'action',action:{type:'prompt',...act}});
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='cabang'){
+    showModal(`<h2>PERSIMPANGAN HIJRAH</h2>
+      <p>Jalur kafilah Quraisy lebih cepat menuju Yatsrib, tapi penuh ujian harta dan iman. Engkau tetap di jalur hijrah utama, atau mengambil jalan pintas?</p>
+      <div class="hint">${p.nama}, pilih:</div>
+      <button class="opt" data-v="main">Tetap di jalur utama (aman, lebih lama)</button>
+      <button class="opt" data-v="pintas">Ambil jalur pintas (P1)</button>`);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        const act={pintas:btn.dataset.v==='pintas'};
+        if(localMode) session.resolvePrompt(act);
+        else if(myPlayerId===0){ session.resolvePrompt(act); broadcastState(); }
+        else sendToHost({type:'action',action:{type:'prompt',...act}});
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='pintasP1'){
+    showModal(`<h2>Jalur Pintas — P1</h2>
+      <p>Engkau membocorkan rencana hijrah demi upah dari Quraisy. Kembali ke jalur utama, atau lanjut dengan harga akhlak?</p>
+      <button class="opt" data-v="back">Kembali ke jalur utama (petak 24)</button>
+      <button class="opt" data-v="lanjut">Lanjut, terima A−2 <span class="eff">jika A&lt;2 → gagal, mundur ke 16</span></button>`);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        const act={back:btn.dataset.v==='back'};
+        if(localMode) session.resolvePrompt(act);
+        else if(myPlayerId===0){ session.resolvePrompt(act); broadcastState(); }
+        else sendToHost({type:'action',action:{type:'prompt',...act}});
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='pintasP4'){
+    if(prompt.taubat){
+      showModal(`<h2>Jalur Pintas — P4</h2>
+        <p><b>Menyesal &amp; Kembali.</b><br>Engkau bertaubat. Akhlakmu masih cukup (A ≥ 2), jadi engkau bisa kembali ke jalur hijrah — tiba di Quba (petak 26) dengan A+1.</p>
+        <button class="opt" data-v="ok">Lanjutkan</button>`);
+    } else {
+      showModal(`<h2>Jalur Pintas — P4</h2>
+        <p><b>Tersesat Lebih Jauh.</b><br>Akhlakmu kurang (A &lt; 2). Engkau tidak bisa bertaubat di sini, dan tersesat ke Madinah (petak 30, Munafik) dengan A−1.</p>
+        <button class="opt" data-v="ok">Lanjutkan</button>`);
+    }
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        if(localMode) session.resolvePrompt({});
+        else if(myPlayerId===0){ session.resolvePrompt({}); broadcastState(); }
+        else sendToHost({type:'action',action:{type:'prompt'}});
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='kejadian'){
+    const e=prompt.ev;
+    let html=`<h2>Kejadian — ${e.judul}</h2><p>${e.teks}</p>`;
+    if(e.eff.pilihanUtusan){
+      html+=`<button class="opt" data-v="tolak">Tolak tawaran → A+1</button>
+             <button class="opt" data-v="terima">Terima tawaran → P+2, A−2</button>`;
+    } else {
+      html+=`<button class="opt" data-v="ok">Lanjutkan</button>`;
+    }
+    showModal(html);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        const act={utusan:btn.dataset.v};
+        if(localMode) session.resolvePrompt(act);
+        else if(myPlayerId===0){ session.resolvePrompt(act); broadcastState(); }
+        else sendToHost({type:'action',action:{type:'prompt',...act}});
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='refleksi'){
+    const r=prompt.r;
+    showModal(`<h2>Refleksi — ${r.judul}</h2><p>${r.teks}</p>
+      <div class="hint">Jawab dengan 1–2 kalimat. Tidak ada jawaban benar/salah.</div>
+      <button class="opt" data-v="ok">Aku sudah menjawab (A+2)</button>
+      <button class="opt" data-v="lewati">Lewati (tanpa A)</button>`);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        const act={lewati:btn.dataset.v==='lewati'};
+        if(localMode) session.resolvePrompt(act);
+        else if(myPlayerId===0){ session.resolvePrompt(act); broadcastState(); }
+        else sendToHost({type:'action',action:{type:'prompt',...act}});
+      };
+    });
+    return;
+  }
+
+  if(prompt.type==='finish'){
+    showModal(`<h2>Husnul Khatimah</h2><p>${p.nama} sudah di petak 40. Memeriksa syarat finis…</p>
+      <button class="opt" data-v="ok">Periksa</button>`);
+    $('modal-body').querySelectorAll('.opt').forEach(btn=>{
+      btn.onclick=()=>{
+        closeModal();
+        if(localMode) session.resolvePrompt({});
+        else if(myPlayerId===0){ session.resolvePrompt({}); broadcastState(); }
+      };
+    });
+    return;
+  }
+}
+
+/* ============================================================
+   8. MODAL & LOG
+   ============================================================ */
+function showModal(html, isWaiting){
+  $('modal-body').innerHTML=html;
+  $('modal').dataset.pending = isWaiting?'0':'1';
+  $('modal').classList.remove('hidden');
+}
+function closeModal(){
+  $('modal').classList.add('hidden');
+  $('modal').dataset.pending='0';
+}
+window.closeModal=closeModal;
+
+$('btn-info').onclick=()=>{
+  if(!session) return;
+  const lv=$('log-view');
+  lv.innerHTML = session.s.log.slice().reverse().map(l=>`<div class="log-item">${l.msg}</div>`).join('');
+  showScreen('screen-log');
+};
+$('btn-close-log').onclick=()=>showScreen('screen-game');
+
+$('btn-exit').onclick=()=>{
+  if(!confirm('Keluar dari permainan?')) return;
+  session=null;
+  closeModal();
+  if(peer) try{peer.destroy()}catch(e){}
+  peer=null; conns={}; hostConn=null;
+  showScreen('screen-landing');
+};
+
+/* ============================================================
+   9. ONLINE MODE (PeerJS)
+   ============================================================ */
+let peer=null;
+let conns={};
+let hostConn=null;
+let isHost=false;
+let roomCode='';
+let hostPlayers=[];
+
+function genCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s='';
+  for(let i=0;i<5;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+function peerIdFromCode(code){ return 'uta-sirah-'+code.toUpperCase(); }
+
+function initOnlineTabs(){
+  $('tab-host').onclick=renderOnlineHost;
+  $('tab-join').onclick=()=>renderOnlineJoin();
+  $('btn-back-online').onclick=()=>{
+    if(peer) try{peer.destroy()}catch(e){}
+    peer=null; conns={}; hostConn=null; isHost=false;
+    showScreen('screen-landing');
+  };
+  const urlRoom=new URLSearchParams(location.search).get('room');
+  if(urlRoom) renderOnlineJoin(urlRoom.toUpperCase());
+  else renderOnlineHost();
+}
+
+function renderOnlineHost(){
+  $('online-content').innerHTML=`
+    <div class="hint-box">
+      <b>Cara main:</b><br>
+      1. Tekan "Buat Room" di bawah<br>
+      2. Bagikan kode/link ke anak-anak<br>
+      3. Tunggu mereka gabung (maks 4 pemain)<br>
+      4. Tekan "Mulai" saat semua siap
+    </div>
+    <button class="btn" id="btn-create-room">Buat Room Baru</button>
+  `;
+  $('btn-create-room').onclick=createRoom;
+}
+
+function renderOnlineJoin(prefill){
+  $('online-content').innerHTML=`
+    <div class="hint-box"><b>Gabung Room:</b><br>Masukkan kode 5 huruf dari guru/temanmu.</div>
+    <input class="input" id="join-code" placeholder="Contoh: AB3XY" maxlength="5"
+      value="${prefill||''}" style="text-transform:uppercase;text-align:center;font-size:22px;letter-spacing:6px;font-family:ui-monospace,monospace">
+    <input class="input" id="join-name" placeholder="Namamu" maxlength="14">
+    <button class="btn" id="btn-do-join">Gabung →</button>
+    <div id="join-status" style="text-align:center;color:var(--mut);font-size:12px;margin-top:14px"></div>
+  `;
+  if(prefill) $('join-name').focus(); else $('join-code').focus();
+  $('btn-do-join').onclick=doJoin;
+}
+
+function createRoom(){
+  const code=genCode();
+  roomCode=code;
+  isHost=true;
+  hostPlayers=[{id:0,nama:'Guru'}];
+  $('online-content').innerHTML=`<div class="hint-box">Sedang membuat room…</div><div class="spinner"></div>`;
+  peer=new Peer(peerIdFromCode(code), {debug:0});
+  peer.on('open', id=>{
+    const link=`${location.origin}${location.pathname}?room=${code}`;
+    $('online-content').innerHTML=`
+      <div class="hint-box"><b>Room siap! Kode:</b></div>
+      <div class="room-code">${code}</div>
+      <div class="hint-box">Bagikan <b>kode</b> ini ke anak-anak, atau kirim link di bawah:</div>
+      <input class="input" id="share-link" value="${link}" readonly style="font-size:12px">
+      <button class="btn secondary" id="btn-copy">📋 Salin Link</button>
+      <div id="waiting-list" class="hint-box" style="margin-top:20px">
+        <b>Pemain yang sudah gabung:</b>
+        <div id="joined-list" style="margin-top:8px">(belum ada)</div>
+      </div>
+      <button class="btn" id="btn-start-online" disabled>Mulai (minimal 2 pemain)</button>
+    `;
+    $('btn-copy').onclick=()=>navigator.clipboard.writeText(link).then(()=>toast('Link disalin!'));
+    $('btn-start-online').onclick=startOnlineGame;
+    updateWaitingList();
+  });
+  peer.on('connection', conn=>{
+    conn.on('open',()=>{
+      conns[conn.peer]=conn;
+      conn.on('data', data=>handleGuestData(conn,data));
+      conn.on('close', ()=>{
+        delete conns[conn.peer];
+        if(!session){
+          hostPlayers=hostPlayers.filter(p=>p.peer!==conn.peer);
+          updateWaitingList();
+        }
+      });
+    });
+  });
+  peer.on('error', err=>{
+    console.error(err);
+    if(err.type==='unavailable-id'){
+      $('online-content').innerHTML=`<div class="hint-box">Kode room sudah dipakai. Coba lagi.</div>
+        <button class="btn" id="btn-retry">Coba Lagi</button>`;
+      $('btn-retry').onclick=createRoom;
+    } else {
+      $('online-content').innerHTML=`<div class="hint-box">Gagal konek: ${err.type}<br>Gunakan mode <b>"Main di HP Ini"</b> sebagai alternatif.</div>`;
+    }
+  });
+}
+
+function updateWaitingList(){
+  const el=$('joined-list');
+  if(!el) return;
+  if(hostPlayers.length<=1){
+    el.innerHTML=hostPlayers.map((p,i)=>`<div>${i+1}. <b>${p.nama}</b> (kamu)</div>`).join('');
+  } else {
+    el.innerHTML=hostPlayers.map((p,i)=>`<div>${i+1}. ${p.id===0?'<b>'+p.nama+'</b> (kamu)':p.nama}</div>`).join('');
+  }
+  const btn=$('btn-start-online');
+  if(btn) btn.disabled = hostPlayers.length<2;
+}
+
+function handleGuestData(conn,data){
+  if(!data || !data.type) return;
+  if(data.type==='join'){
+    if(session){ conn.send({type:'error',msg:'Permainan sudah berjalan'}); return; }
+    if(hostPlayers.length>=4){ conn.send({type:'error',msg:'Room penuh'}); return; }
+    const pid=hostPlayers.length;
+    hostPlayers.push({id:pid,nama:data.name||('Pemain '+(pid+1)),peer:conn.peer});
+    conn.send({type:'welcome', playerId:pid});
+    updateWaitingList();
+  }
+  if(data.type==='action' && session){
+    const s=session.s;
+    const guestPlayer=hostPlayers.find(x=>x.peer===conn.peer);
+    if(!guestPlayer) return;
+    if(s.pendingCard && s.pendingCard.playerId===guestPlayer.id){
+      const act=data.action;
+      if(act.type==='prompt'){
+        const {type,...rest}=act;
+        session.resolvePrompt(rest);
+      }
+      broadcastState();
+      return;
+    }
+    if(s.turn===guestPlayer.id && !s.pendingCard && data.action.type==='roll'){
+      session.roll();
+      setTimeout(broadcastState, 100);
+    }
+  }
+}
+
+function broadcastState(){
+  if(!session) return;
+  const snap=JSON.parse(JSON.stringify(session.s));
+  Object.values(conns).forEach(c=>{
+    c.send({type:'state', state:snap});
+  });
+}
+
+function startOnlineGame(){
+  const names=hostPlayers.map(p=>p.nama==='Guru'?'Guru':p.nama);
+  myPlayerId=0;
+  const st=newState(names);
+  pushLog(st,'Perjalanan dimulai. Tidak ada jawaban salah — hanya pilihan.');
+  session=new GameSession(st, ()=>{ renderGame(); broadcastState(); });
+  showScreen('screen-game');
+  renderGame();
+  broadcastState();
+}
+
+function doJoin(){
+  const code=$('join-code').value.trim().toUpperCase();
+  const name=$('join-name').value.trim();
+  if(code.length!==5){ toast('Kode harus 5 huruf'); return; }
+  if(!name){ toast('Isi namamu dulu'); return; }
+  $('join-status').textContent='Menyambung…';
+  roomCode=code; isHost=false;
+  peer=new Peer({debug:0});
+  peer.on('open', ()=>{
+    hostConn=peer.connect(peerIdFromCode(code), {reliable:true});
+    hostConn.on('open', ()=>{
+      hostConn.send({type:'join',name});
+      $('join-status').textContent='Terhubung. Menunggu guru memulai…';
+    });
+    hostConn.on('data', data=>{
+      if(data.type==='welcome'){
+        myPlayerId=data.playerId;
+        $('join-status').textContent=`Masuk sebagai pemain ${data.playerId+1}. Menunggu mulai…`;
+      }
+      if(data.type==='error'){ $('join-status').textContent='Gagal: '+data.msg; }
+      if(data.type==='state'){
+        if(!session){
+          session=new GameSession(data.state, ()=>{ renderGame(); });
+          showScreen('screen-game');
+        } else {
+          session.s=data.state;
+        }
+        renderGame();
+        if(data.state.pendingCard && data.state.pendingCard.playerId===myPlayerId){
+          showPrompt(data.state.pendingCard);
+        }
+      }
+    });
+    hostConn.on('close', ()=>{ toast('Koneksi terputus'); });
+  });
+  peer.on('error', err=>{
+    console.error(err);
+    $('join-status').textContent='Gagal konek: '+err.type+'. Coba lagi.';
+  });
+}
+
+function sendToHost(msg){
+  if(hostConn && hostConn.open) hostConn.send(msg);
+  else toast('Belum terhubung');
+}
+
+/* ============================================================
+   10. INIT
+   ============================================================ */
+if(new URLSearchParams(location.search).get('room')){
+  localMode=false;
+  showScreen('screen-online');
+  initOnlineTabs();
+}
+</script>
+</body>
+</html>
